@@ -76,54 +76,8 @@ public class Converter {
 //      String json = "{\"veggies\" : [\"aubergine\", \"carrot\"], \"ids\" : [1239, 1222, 8], \"amount\" : 28.23}";
 //      String json = "{\"veggies\" : [\"aubergine\", \"carrot\"], \"mixed\" : [\"amour\", 1222, false]}";
 //      String json = "{\"veggies\" : [ { \"name\" : \"aubergine\", \"color\" : \"purple\" }, { \"name\" : \"carrot\", \"color\" : \"orange\" } ] }";
-      String json1 = "{\"isOpen\" : false, \"id\" : 334, \"order\" : [true, false], \"person\" : {\"fName\" : \"yvette\", \"lName\" : \"white\"} }";
-      String json2 = "{\"isOpen\" : true, \"id\" : 1910032223334, \"person\" : {\"fName\" : \"david\", \"lName\" : \"franklin\", \"mName\" : \"jackman\"}, \"rankings\" : [ { \"rank\" : 2, \"state\" : \"FL\" }, { \"rank\" : 3, \"state\" : \"MD\" } ] }";
-      Converter c2 = new Converter("example");
-      c2.read(json2);
-      ObjectElement element = c2.getRoot();
-      ByteArrayOutputStream outstream = new ByteArrayOutputStream();
-      element.write(outstream);
-      c2.logger.debug("\n" + outstream.toString());
-      /*
-      Converter c1 = new Converter();
-      c1.read(json1);
-      ObjectElement element1 = c1.getRoot();
-      Converter c2 = new Converter();
-      c2.read(json2);
-      ObjectElement element2 = c2.getRoot();
-      element1.merge(element2);
-      c1.logger.debug("element : " + element1);
-      
-      ByteArrayOutputStream outstream = new ByteArrayOutputStream();
-      element1.write(outstream);
-      
-      c1.logger.debug("" + outstream.toString());
-      */
-   }
-   
-   public void read(InputStream stream)  {
-      String s = null;
-      try {
-         s = IOUtils.toString(stream);
-      } catch (IOException e) {
-         logger.error("",e);
-      }
-      parse(s);
-   }
-
-   public void read(String collectionOfJsonStr) {
-      try {
-         BufferedReader br = new BufferedReader(new StringReader(collectionOfJsonStr));
-         String json = br.readLine();
-         while (json != null) {
-            if (!json.isEmpty()) {
-               parse(json);
-            }
-            json = br.readLine();
-         }
-      } catch (Exception e) {
-         logger.error("There was an error:", e);
-      }
+//      String json1 = "{\"isOpen\" : false, \"id\" : 334, \"order\" : [true, false], \"person\" : {\"fName\" : \"yvette\", \"lName\" : \"white\"} }";
+//      String json2 = "{\"isOpen\" : true, \"id\" : 1910032223334, \"person\" : {\"fName\" : \"david\", \"lName\" : \"franklin\", \"mName\" : \"jackman\"}, \"rankings\" : [ { \"rank\" : 2, \"state\" : \"FL\" }, { \"rank\" : 3, \"state\" : \"MD\" } ] }";
    }
    
    public void parse(String json) {
@@ -138,7 +92,6 @@ public class Converter {
       }
       
       this.root = asElement(this.rootName, datamap);
-      logger.debug("the end");
    }
    
    public ObjectElement asElement(String name, Map<String, Object> elementsMap) {
@@ -148,10 +101,10 @@ public class Converter {
       for (Iterator<String> i = elementsMap.keySet().iterator(); i.hasNext();) {
          String key = i.next();
          Object value = elementsMap.get(key);
-         String classname = value.getClass().getName();
+         String classname = (value == null ? "" : value.getClass().getName());
          logger.debug("key = " + key);
          logger.debug("value = " + value);
-         logger.debug("value class name = " + classname);
+         logger.debug("class = " + classname);
          
          Element element = asElement(key, value); 
          rootElement.add(element);
@@ -184,22 +137,23 @@ public class Converter {
    @SuppressWarnings("unchecked")
    private Element asElement(String key, Object value) {
       
-      if (value instanceof Boolean) {
-         return new BooleanElement(key);
-      } else if (value instanceof Integer) {
-         return new IntegerElement(key);
-      } else if (value instanceof Long) {
-         return new LongElement(key);
-      } else if (value instanceof String) {
-         return new StringElement(key);
-      } else if (value instanceof List) {
-         return asListElement(key, (List)value);
-      } else if (value instanceof Map) {
-         return asElement(key, (Map<String, Object>) value);
-      } else if (value instanceof Double) {
-         return new DoubleElement(key);
-      }
-      
+      if (value != null) {
+         if (value instanceof Boolean) {
+            return new BooleanElement(key);
+         } else if (value instanceof Integer) {
+            return new IntegerElement(key);
+         } else if (value instanceof Long) {
+            return new LongElement(key);
+         } else if (value instanceof String) {
+            return new StringElement(key);
+         } else if (value instanceof List) {
+            return asListElement(key, (List)value);
+         } else if (value instanceof Map) {
+            return asElement(key, (Map<String, Object>) value);
+         } else if (value instanceof Double) {
+            return new DoubleElement(key);
+         }
+      } 
       return new UnknownElement(key);
    }
       
