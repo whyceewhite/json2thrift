@@ -15,14 +15,14 @@ public class LongElement extends AbstractElement implements NumberElement {
    }
    
    public Element merge(Element element) throws MergeException {
-      if (element == null) {
+      if (element == null || this == element || element.isUnknown() || this.getClass().equals(element.getClass())) {
          return this;
-      } else if (element instanceof DoubleElement) {
+      } else if (element.getClass().equals(DoubleElement.class)) {
          return element;
       } else if (element instanceof NumberElement) {
          return this;
       }
-      throw new MergeException("The element type of " + element.getClass().getName() + " is incompatible with " + this.getClass().getName());
+      throw new MergeException(this, element);
    }
 
 }

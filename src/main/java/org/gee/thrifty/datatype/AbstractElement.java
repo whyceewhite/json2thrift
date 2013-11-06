@@ -25,10 +25,12 @@ public abstract class AbstractElement implements Element {
    }
    
    public Element merge(Element element) throws MergeException {
-      if (element == null || this.getClass().equals(element.getClass())) {
+      if (element == null || this == element || element.isUnknown() || this.getClass().equals(element.getClass())) {
          return this;
+      } else if (this.isUnknown()) {
+         return element;
       }
-      throw new MergeException("The element type of " + element.getClass().getName() + " is incompatible with " + this.getClass().getName());
+      throw new MergeException(this, element);
    }
    
    protected String writeTypeAndName() {

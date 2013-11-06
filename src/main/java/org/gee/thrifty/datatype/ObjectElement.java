@@ -13,6 +13,7 @@ public class ObjectElement extends AbstractElement implements Element {
    
    private String structName;
    private Map<String, Element> elements;
+   private int mergeCount;
    
    public ObjectElement(String name) {
       setName(name);
@@ -60,12 +61,16 @@ public class ObjectElement extends AbstractElement implements Element {
       return this.elements;
    }
    
+   public int getMergeCount() {
+      return this.mergeCount;
+   }
+   
    public Element merge(Element element) throws MergeException {
       if (element == null || this == element || element.isUnknown()) {
          return this;
       }
       if (!this.getClass().getName().equals(element.getClass().getName())) {
-         throw new MergeException("The element type of " + element.getClass().getName() + " is incompatible with " + this.getClass().getName());
+         throw new MergeException(this, element);
       }
       Map<String, Element> elementsMap = ((ObjectElement)element).getElements();
       for (String elementKey : elementsMap.keySet()) {

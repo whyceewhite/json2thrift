@@ -14,10 +14,10 @@ public class DoubleElement extends AbstractElement implements NumberElement {
    }
    
    public Element merge(Element element) throws MergeException {
-      if (element == null || element instanceof NumberElement) {
+      if (element == null || this == element || element.isUnknown() || element instanceof NumberElement) {
          return this;
       }
-      throw new MergeException("The element type of " + element.getClass().getName() + " is incompatible with " + this.getClass().getName());
+      throw new MergeException(this, element);
    }
 
 }

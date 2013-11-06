@@ -14,12 +14,12 @@ public class IntegerElement extends AbstractElement implements NumberElement {
    }
    
    public Element merge(Element element) throws MergeException {
-      if (element == null || element instanceof IntegerElement) {
+      if (element == null || this == element || element.isUnknown() || this.getClass().equals(element.getClass())) {
          return this;
       } else if (element instanceof NumberElement) {
          return element;
       }
-      throw new MergeException("The element type of " + element.getClass().getName() + " is incompatible with " + this.getClass().getName());
+      throw new MergeException(this, element);
    }
 
 }
