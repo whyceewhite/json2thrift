@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +13,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.gee.thrifty.datatype.Element;
 import org.gee.thrifty.datatype.ObjectElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,15 +35,18 @@ public class Merger {
    }
    
    public void merge() throws IOException {
+      // TODO: too long. modularize.
       ObjectElement element = null;
       if (this.inputDirectory != null) {
          File[] files = this.inputDirectory.listFiles();
          if (files != null) {
             for (File jsonFile : files) {
+               logger.info("Processing file " + jsonFile.getAbsolutePath());
                element = this.merge(new FileInputStream(jsonFile), element);
             }
          }
       } else if (this.inputFile != null) {
+         logger.info("Processing file " + this.inputFile.getAbsolutePath());
          element = this.merge(new FileInputStream(this.inputFile));
       } else {
          throw new RuntimeException("Either an input directory or file must be specified.");
@@ -85,19 +86,21 @@ public class Merger {
    
    ObjectElement merge(InputStream stream) throws IOException  {
       String contents = IOUtils.toString(stream);
-      return parse(contents);
+      return merge(contents);
    }
 
-   ObjectElement merge(String collectionOfJsonStr) throws IOException {
+   ObjectElement merge(String jsonStringGroup) throws IOException {
       ObjectElement element = null;
-      BufferedReader br = new BufferedReader(new StringReader(collectionOfJsonStr));
+      BufferedReader br = new BufferedReader(new StringReader(jsonStringGroup));
       String json = br.readLine();
       while (json != null) {
          if (!json.isEmpty()) {
+            logger.debug("Deserializing json: " + json);
             ObjectElement tempElement = parse(json);
             if (element == null) {
                element = tempElement;
             } else {
+               logger.debug("Merging " + tempElement + " into " + element);
                element.merge(tempElement);
             }
          }

@@ -1,18 +1,9 @@
 package org.gee.thrifty;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.gee.thrifty.datatype.BooleanElement;
 import org.gee.thrifty.datatype.DoubleElement;
 import org.gee.thrifty.datatype.Element;
@@ -29,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 
 /**
- * Suggest that if all the objects passed in have an element then that element is required.
  *
  */
 public class Converter {
@@ -37,26 +27,6 @@ public class Converter {
    private Logger logger = LoggerFactory.getLogger(getClass());
    private ObjectElement root;
    private String rootName;
-   
-   /*
-   public static void main(String[] args) {
-      Converter c = new Converter();
-      FileInputStream fileStream = null;
-      try {
-         File file = new File("/Users/ywhite/Development/workspace/gnip/gnip-parser/src/test/resources/1382906810623.output.json");
-         fileStream = new FileInputStream(file);
-         c.read(fileStream);
-      } catch (Exception e) {
-         c.logger.error("", e);
-      } finally {
-         try {
-            fileStream.close();
-         } catch (IOException e) {
-            e.printStackTrace();
-         }
-      }
-   }
-   */
    
    public Converter() {
       this("root");
@@ -97,7 +67,6 @@ public class Converter {
    public ObjectElement asElement(String name, Map<String, Object> elementsMap) {
       
       ObjectElement rootElement = new ObjectElement(name);
-      
       for (Iterator<String> i = elementsMap.keySet().iterator(); i.hasNext();) {
          String key = i.next();
          Object value = elementsMap.get(key);
@@ -115,7 +84,10 @@ public class Converter {
    /**
     * <p>
     * The assumption is that for thrift lists, the list elements have the same
-    * data type. Thus, if the list contains datatypes that are not
+    * data type. Thus, if the list of values contains datatypes that are not
+    * equivalent then an exception is thrown.
+    * </p>
+    * 
     * @param key
     * @param values
     */
@@ -134,7 +106,7 @@ public class Converter {
       return new ListElement(listType);
    }
    
-   @SuppressWarnings("unchecked")
+   @SuppressWarnings({ "unchecked", "rawtypes" })
    private Element asElement(String key, Object value) {
       
       if (value != null) {
