@@ -44,6 +44,10 @@ public class ObjectElement extends AbstractElement implements Element {
       return true;
    }
    
+   public ObjectElement getObject() {
+      return this;
+   }
+   
    public String getDatatypeName() {
       return getStructName();
    }
@@ -57,7 +61,7 @@ public class ObjectElement extends AbstractElement implements Element {
    }
    
    public Element merge(Element element) throws MergeException {
-      if (element == null || element.isUnknown()) {
+      if (element == null || this == element || element.isUnknown()) {
          return this;
       }
       if (!this.getClass().getName().equals(element.getClass().getName())) {
@@ -81,14 +85,14 @@ public class ObjectElement extends AbstractElement implements Element {
    
    public void write(OutputStream outstream) throws IOException {
       ArrayList<String> structList = new ArrayList<String>();
-      this.write(structList, this);
+      this.write(structList);
       for (String struct : structList) {
          outstream.write(struct.getBytes());
          outstream.write('\n');
       }
    }
    
-   protected void write(List<String> structList, ObjectElement parentObj) {
+   protected void write(List<String> structList) {
       StringBuilder buffer = new StringBuilder();
       buffer.append("struct ")
          .append(this.getStructName())
@@ -97,8 +101,8 @@ public class ObjectElement extends AbstractElement implements Element {
          buffer.append('\n');
          buffer.append("   ");
          buffer.append(element.write());
-         if (element.isObject()) {
-            ((ObjectElement)element).write(structList, this);
+         if (element.isObject() || element.hasObject()) {
+            ((ObjectElement)(element.getObject())).write(structList);
          }
       }
       buffer.append('\n');

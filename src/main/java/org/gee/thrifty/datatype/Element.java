@@ -8,6 +8,8 @@ public interface Element {
    public boolean isObject();
    public boolean isUnknown();
    
+   public boolean hasObject();
+   public Element getObject();
    public String getDatatypeName();
    public String getName();
    public void setName(String name);

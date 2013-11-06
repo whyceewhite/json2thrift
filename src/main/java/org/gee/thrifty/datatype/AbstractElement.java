@@ -38,6 +38,14 @@ public abstract class AbstractElement implements Element {
    public boolean isObject() {
       return false;
    }
+   
+   public boolean hasObject() {
+      return false;
+   }
+   
+   public ObjectElement getObject() {
+      return null;
+   }
 
    public abstract String getDatatypeName();
    
