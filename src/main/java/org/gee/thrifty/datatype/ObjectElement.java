@@ -2,10 +2,10 @@ package org.gee.thrifty.datatype;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.gee.thrifty.exception.MergeException;
 
@@ -89,15 +89,15 @@ public class ObjectElement extends AbstractElement implements Element {
    }
    
    public void write(OutputStream outstream) throws IOException {
-      ArrayList<String> structList = new ArrayList<String>();
-      this.write(structList);
-      for (String struct : structList) {
+      TreeSet<String> structCollection = new TreeSet<String>();
+      this.write(structCollection);
+      for (String struct : structCollection) {
          outstream.write(struct.getBytes());
          outstream.write('\n');
       }
    }
    
-   protected void write(List<String> structList) {
+   protected void write(Collection<String> structList) {
       StringBuilder buffer = new StringBuilder();
       buffer.append("struct ")
          .append(this.getStructName())
@@ -113,6 +113,23 @@ public class ObjectElement extends AbstractElement implements Element {
       buffer.append('\n');
       buffer.append('}');
       structList.add(buffer.toString());
+   }
+   
+   public boolean equals(Element element) {
+      if (!super.equals(element)) return false;
+      
+      Map<String, Element> elementMap = ((ObjectElement)element).getElements();
+      if (this.getElements().size() != elementMap.size()) return false;
+      
+      for (String thisKey : this.getElements().keySet()) {
+         Element thisValue = this.getElements().get(thisKey);
+         if (elementMap.containsKey(thisKey)) {
+            Element elementValue = elementMap.get(thisKey);
+            if (!thisValue.equals(elementValue)) return false;
+         }
+      }
+      
+      return true;
    }
    
 }

@@ -75,6 +75,16 @@ public abstract class AbstractElement implements Element {
       this.isRequired = isRequired;
    }
    
+   public boolean equals(Element element) {
+      if (this == element) {
+         return true;
+      }
+      if (element == null || !getClass().equals(element.getClass())) {
+         return false;
+      }
+      return this.getName().equals(element.getName());
+   }
+   
    public String toString() {
       return this.getClass().getName()+"["+ writeTypeAndName()+"]";
    }

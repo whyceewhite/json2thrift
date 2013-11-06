@@ -1,5 +1,7 @@
 package org.gee.thrifty.datatype;
 
+import java.util.Map;
+
 import org.gee.thrifty.exception.MergeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,13 +62,12 @@ public class ListElement extends AbstractElement implements Element {
          this.setListType(mergedListTypeElement);
          return this;
       }
-      logger.debug("ListElement merge failed.");
-      logger.debug("___ this.listType = " + this.getListType());
-      logger.debug("___ element = " + element);
-      if (element.getClass().equals(ListElement.class)) {
-         logger.debug("___ element.listType = " + ((ListElement)element).getListType());
-      }
       throw new MergeException(this, element);
+   }
+   
+   public boolean equals(Element element) {
+      if (!super.equals(element)) return false;
+      return this.getListType().equals(((ListElement)element).getListType());
    }
 
 }
