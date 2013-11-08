@@ -24,6 +24,7 @@ public class Merger {
    private File inputDirectory;;
    private File inputFile;
    private File outputFile;
+   private int fileMergeCount = 0;
    
    public Merger() {
    }
@@ -35,28 +36,40 @@ public class Merger {
    }
    
    public void merge() throws IOException {
-      // TODO: too long. modularize.
+      
+      validate();
+      
       ObjectElement element = null;
-      if (this.inputDirectory != null) {
-         File[] files = this.inputDirectory.listFiles();
-         if (files != null) {
-            for (File jsonFile : files) {
-               logger.info("Processing file " + jsonFile.getAbsolutePath());
-               element = this.merge(new FileInputStream(jsonFile), element);
+      try {
+         if (this.inputDirectory != null) {
+            File[] files = this.inputDirectory.listFiles();
+            if (files != null) {
+               for (File jsonFile : files) {
+                  logger.debug("Processing file " + jsonFile.getAbsolutePath());
+                  element = this.merge(new FileInputStream(jsonFile), element);
+                  fileMergeCount++;
+               }
             }
+         } else if (this.inputFile != null) {
+            logger.debug("Processing file " + this.inputFile.getAbsolutePath());
+            element = this.merge(new FileInputStream(this.inputFile));
+            fileMergeCount++;
          }
-      } else if (this.inputFile != null) {
-         logger.info("Processing file " + this.inputFile.getAbsolutePath());
-         element = this.merge(new FileInputStream(this.inputFile));
-      } else {
-         throw new RuntimeException("Either an input directory or file must be specified.");
+      } catch (Exception e) {
+         logger.error("An error occurred during processing. " + fileMergeCount + " files were processed prior to the error.", e);
       }
       
+      this.write(element);
+   }
+   
+   private void write(ObjectElement element) throws IOException {
+      
       if (element == null) {
-         logger.error("No value was derived from the merge execution. Check that the input files exist and contain data.");
+         logger.error("No thrift element value was derived from the merge execution. Check that the input files exist and contain data.");
          return;
       }
       
+      logger.info(fileMergeCount + " files were merged.");
       OutputStream outputStream = null;
       if (this.outputFile == null) {
          outputStream = new ByteArrayOutputStream();
