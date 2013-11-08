@@ -7,13 +7,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
 import org.gee.thrifty.datatype.ObjectElement;
+import org.gee.thrifty.exception.InvalidRuntimeArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +32,14 @@ public class Merger {
    }
    
    public static void main(String[] args) throws Exception {
+      
       Merger m = new Merger();
-      m.parseArguments(args);
-      m.merge();
+      try {
+         m.parseArguments(args);
+         m.merge();
+      } catch (InvalidRuntimeArgumentException e) {
+         m.printHelp();
+      }
    }
    
    public void merge() throws IOException {
@@ -45,13 +52,13 @@ public class Merger {
             File[] files = this.inputDirectory.listFiles();
             if (files != null) {
                for (File jsonFile : files) {
-                  logger.debug("Processing file " + jsonFile.getAbsolutePath());
+                  logger.info("Processing file " + jsonFile.getAbsolutePath());
                   element = this.merge(new FileInputStream(jsonFile), element);
                   fileMergeCount++;
                }
             }
          } else if (this.inputFile != null) {
-            logger.debug("Processing file " + this.inputFile.getAbsolutePath());
+            logger.info("Processing file " + this.inputFile.getAbsolutePath());
             element = this.merge(new FileInputStream(this.inputFile));
             fileMergeCount++;
          }
@@ -83,10 +90,19 @@ public class Merger {
       }
    }
    
-   private void validate() {
-      // check that either inputDirectory or inputFile is given
-      // check that inputDirectory exists and is a directory.
-      // check that inputFile exists.
+   private void validate() throws InvalidRuntimeArgumentException {
+      
+      if (this.inputDirectory == null && this.inputFile == null) {
+         throw new InvalidRuntimeArgumentException("Either the inputDirectory or the inputFile must be specified prior to execution.");
+      }
+      
+      if (this.inputDirectory != null && !this.inputDirectory.isDirectory()) {
+         throw new InvalidRuntimeArgumentException("The inputDirectory '" + this.inputDirectory + "' is not a directory.");
+      }
+      
+      if (this.inputDirectory == null && this.inputFile != null && !this.inputFile.isFile()) {
+         throw new InvalidRuntimeArgumentException("The inputFile '" + this.inputFile + "' is not a file.");
+      }
    }
    
    ObjectElement merge(InputStream stream, ObjectElement element) throws IOException {
@@ -98,7 +114,7 @@ public class Merger {
    }
    
    ObjectElement merge(InputStream stream) throws IOException  {
-      String contents = IOUtils.toString(stream);
+      String contents = toString(stream);
       return merge(contents);
    }
 
@@ -126,6 +142,32 @@ public class Merger {
       Converter converter = new Converter();
       converter.parse(json);
       return converter.getRoot();
+   }
+   
+   /**
+    * <p>
+    * Reads the given input stream's contents and returns it as a string.
+    * </p>
+    * 
+    * @param inputStream The input stream to read. Required.
+    * @return The input stream's contents.
+    * @throws IOException If an error occurs while accessing, reading or
+    *       closing the file.
+    */
+   private String toString(InputStream inputStream) throws IOException {
+      
+      StringBuffer stringBuffer = new StringBuffer();
+      InputStreamReader reader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
+
+      char[] charBuffer = new char[1024];
+      int charsRead = reader.read(charBuffer);
+      while (charsRead > 0) {
+         stringBuffer.append(charBuffer, 0, charsRead);
+         charsRead = reader.read(charBuffer);
+      }
+      reader.close();
+      
+      return stringBuffer.toString();
    }
    
    /**
@@ -159,6 +201,17 @@ public class Merger {
             logger.debug("Runtime argument established | " + argName + " = " + argValue);
          }
       }
+   }
+   
+   /**
+    * <p>
+    * Prints to System.out the runtime arguments that may be used to execute
+    * this utility.
+    * </p>
+    */
+   private void printHelp() {
+      // TODO: fill in.
+      System.out.println("help goes here. :D");
    }
    
 }
