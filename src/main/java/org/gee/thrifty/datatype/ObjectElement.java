@@ -98,11 +98,13 @@ public class ObjectElement extends AbstractElement implements Element {
    }
    
    protected void write(Collection<String> structList) {
+      int order = 1;
       StringBuilder buffer = new StringBuilder();
       buffer.append("struct ")
          .append(this.getStructName())
          .append(" {");
       for (Element element : this.getElements().values()) {
+         element.setOrder(order++);
          buffer.append('\n');
          buffer.append("   ");
          buffer.append(element.write());
@@ -115,6 +117,15 @@ public class ObjectElement extends AbstractElement implements Element {
       structList.add(buffer.toString());
    }
    
+   /**
+    * <p>
+    * Answers true if element is equal to this instance and false if it is not.
+    * </p>
+    * 
+    * @param element The element instance that is equated against this instance.
+    * @return  true if this and the element instances are equal and false if
+    *       they are not.
+    */
    public boolean equals(Element element) {
       if (!super.equals(element)) return false;
       
