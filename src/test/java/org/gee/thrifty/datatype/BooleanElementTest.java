@@ -65,7 +65,7 @@ public class BooleanElementTest {
    @Test
    public void mergeWithDifferentBoolean() {
       BooleanElement elem = new BooleanElement("test");
-      Element mergeElem = elem.merge(null);
+      Element mergeElem = elem.merge(new BooleanElement("test"));
       Assert.assertSame(elem, mergeElem);
    }
    
