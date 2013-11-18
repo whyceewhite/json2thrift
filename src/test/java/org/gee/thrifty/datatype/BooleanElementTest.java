@@ -125,4 +125,75 @@ public class BooleanElementTest {
       } catch (MergeException e) {
       }
    }
+   
+   @Test
+   public void equalsItself() {
+      BooleanElement elem = new BooleanElement("test");
+      Assert.assertTrue(elem.equals(elem));
+   }
+   
+   @Test
+   public void equalsSameObjectTypeDifferentName() {
+      Assert.assertFalse(new BooleanElement("test").equals(new BooleanElement("test2")));
+   }
+   
+   @Test
+   public void equalsWithBoolean() {
+      Assert.assertTrue(new BooleanElement("test").equals(new BooleanElement("test")));
+   }
+   
+   @Test
+   public void equalsWithDouble() {
+      Assert.assertFalse(new BooleanElement("test").equals(new DoubleElement("test")));
+   }
+   
+   @Test
+   public void equalsWithInteger() {
+      Assert.assertFalse(new BooleanElement("test").equals(new IntegerElement("test")));
+   }
+   
+   @Test
+   public void equalsWithLong() {
+      Assert.assertFalse(new BooleanElement("test").equals(new LongElement("test")));
+   }
+   
+   @Test
+   public void equalsWithObject() {
+      Assert.assertFalse(new BooleanElement("test").equals(new ObjectElement("test")));
+   }
+   
+   @Test
+   public void equalsWithString() {
+      Assert.assertFalse(new BooleanElement("test").equals(new StringElement("test")));
+   }
+   
+   @Test
+   public void equalsWithListOfBoolean() {
+      Assert.assertFalse(new BooleanElement("test").equals(new ListElement(new BooleanElement("test"))));
+   }
+   
+   @Test
+   public void equalsWithListOfDouble() {
+      Assert.assertFalse(new BooleanElement("test").equals(new ListElement(new DoubleElement("test"))));
+   }
+   
+   @Test
+   public void equalsWithListOfInteger() {
+      Assert.assertFalse(new BooleanElement("test").equals(new ListElement(new IntegerElement("test"))));
+   }
+   
+   @Test
+   public void equalsWithListOfLong() {
+      Assert.assertFalse(new BooleanElement("test").equals(new ListElement(new LongElement("test"))));
+   }
+   
+   @Test
+   public void equalsWithListOfObject() {
+      Assert.assertFalse(new BooleanElement("test").equals(new ListElement(new ObjectElement("test"))));
+   }
+   
+   @Test
+   public void equalsWithListOfString() {
+      Assert.assertFalse(new BooleanElement("test").equals(new ListElement(new StringElement("test"))));
+   }
 }
