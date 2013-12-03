@@ -20,37 +20,64 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 
 /**
- *
+ * <p>
+ * Given a JSON string, converts it into an {@link org.gee.thrifty.datatype.ObjectElement}
+ * object which represents the structure of given JSON string.
+ * </p>
+ * <p>
+ * To convert a JSON string into an ObjectElement, instantiate the class and
+ * provide a name for the root structure. If no name is given then a default
+ * root structure name is used.<br>
+ * Call the {@link #parse(String)} method with the JSON string that needs to be
+ * converted and returned is the JSON as an ObjectElement.
+ * </p>
+ * <p>
+ * The {@link #parse(String)} method may be called repeatedly with new strings.
+ * However, because the root structure name is set upon instantiation, all parse
+ * calls will result in a root structure with the same name.
+ * </p> 
  */
 public class Converter {
    
    private Logger logger = LoggerFactory.getLogger(getClass());
-   private ObjectElement root;
+   
+   private final static String ROOT_STRUCT_NAME = "root";
+   
    private String rootName;
    
+   /**
+    * <p>
+    * Creates an instance of this class. The root structure name will default
+    * to "root".
+    * </p>
+    */
    public Converter() {
-      this("root");
+      this(ROOT_STRUCT_NAME);
    }
    
-   public Converter(String name) {
-      this.rootName = name;
+   /**
+    * <p>
+    * Creates an instance of this class. The root structure name will be the
+    * value provided by name.
+    * </p>
+    * 
+    * @param rootName The name of the root structure. If the name is null or
+    *       empty then a default structure name is used.
+    */
+   public Converter(String rootName) {
+      this.setRootName(rootName);
    }
    
-   public ObjectElement getRoot() {
-      return this.root;
-   }
-   
-   public static void main(String[] args) throws Exception {
-      
-//      String json = "{\"isOpen\" : false, \"id\" : 1910032223334, \"order\" : 28, \"person\" : {\"fName\" : \"yvette\", \"lName\" : \"white\"} }";
-//      String json = "{\"veggies\" : [\"aubergine\", \"carrot\"], \"ids\" : [1239, 1222, 8], \"amount\" : 28.23}";
-//      String json = "{\"veggies\" : [\"aubergine\", \"carrot\"], \"mixed\" : [\"amour\", 1222, false]}";
-//      String json = "{\"veggies\" : [ { \"name\" : \"aubergine\", \"color\" : \"purple\" }, { \"name\" : \"carrot\", \"color\" : \"orange\" } ] }";
-//      String json1 = "{\"isOpen\" : false, \"id\" : 334, \"order\" : [true, false], \"person\" : {\"fName\" : \"yvette\", \"lName\" : \"white\"} }";
-//      String json2 = "{\"isOpen\" : true, \"id\" : 1910032223334, \"person\" : {\"fName\" : \"david\", \"lName\" : \"franklin\", \"mName\" : \"jackman\"}, \"rankings\" : [ { \"rank\" : 2, \"state\" : \"FL\" }, { \"rank\" : 3, \"state\" : \"MD\" } ] }";
-   }
-   
-   public void parse(String json) {
+   /**
+    * <p>
+    * Parses the given JSON string and converts it into an ObjectElement object
+    * that represents the structure of the JSON object.
+    * </p>
+    * 
+    * @param json The JSON object to parse and convert into an ObjectElement.
+    * @return The JSON string converted into an ObjectElement representation.
+    */
+   public ObjectElement parse(String json) {
       
       ObjectMapper mapper = new ObjectMapper();
       MapType type = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
@@ -58,13 +85,23 @@ public class Converter {
       try {
          datamap = mapper.readValue(json, type);
       } catch (Exception e) {
-         logger.error("An error occurred while parsing the given JSON string.", e);
+         logger.error("An error occurred while parsing the JSON string below:\n" + json, e);
       }
       
-      this.root = asElement(this.rootName, datamap);
+      return asElement(this.rootName, datamap);
    }
    
-   public ObjectElement asElement(String name, Map<String, Object> elementsMap) {
+   /**
+    * <p>
+    * Makes an ObjectElement from the map of JSON elements.
+    * </p>
+    * 
+    * @param name The name of the object structure. This name is used as the
+    * name for the thrift struct that this object map represents.  
+    * @param elementsMap A JSON object represented as a map of elements.
+    * @return The elementsMap as an ObjectElement object.
+    */
+   protected ObjectElement asElement(String name, Map<String, Object> elementsMap) {
       
       ObjectElement rootElement = new ObjectElement(name);
       for (Iterator<String> i = elementsMap.keySet().iterator(); i.hasNext();) {
@@ -106,6 +143,17 @@ public class Converter {
       return new ListElement(listType);
    }
    
+   /**
+    * <p>
+    * Translates an object value into a corresponding {@link org.gee.thrift.datatype.Element}
+    * based on its data type. The name of the object will be the key.
+    * </p>
+    * 
+    * @param key The JSON element name.
+    * @param value The JSON element value that corresponds to the key.
+    * @return The key and value as an Element that represents the data type of
+    *       the value.
+    */
    @SuppressWarnings({ "unchecked", "rawtypes" })
    private Element asElement(String key, Object value) {
       
@@ -129,5 +177,17 @@ public class Converter {
       return new UnknownElement(key);
    }
       
+   /**
+    * <p>
+    * Sets the structure name of the root object. If the root name given is
+    * null or empty then the default structure name is used.
+    * </p>
+    *  
+    * @param rootName The name of the root structure. If the name is null or
+    *       empty then a default structure name is used.
+    */
+   private void setRootName(String rootName) {
+      this.rootName = (rootName == null || rootName.trim().isEmpty()) ? ROOT_STRUCT_NAME : rootName.trim();
+   }
 
 }
