@@ -11,6 +11,7 @@ import org.gee.thrifty.exception.MergeException;
 
 public class ObjectElement extends AbstractElement implements Element {
    
+   private final static byte[] LINE_SEPARATOR = System.getProperty("line.separator").getBytes(); 
    private String structName;
    private Map<String, Element> elements;
    private int mergeCount;
@@ -93,7 +94,7 @@ public class ObjectElement extends AbstractElement implements Element {
       this.write(structCollection);
       for (String struct : structCollection) {
          outstream.write(struct.getBytes());
-         outstream.write('\n');
+         outstream.write(LINE_SEPARATOR);
       }
    }
    
@@ -105,14 +106,14 @@ public class ObjectElement extends AbstractElement implements Element {
          .append(" {");
       for (Element element : this.getElements().values()) {
          element.setOrder(order++);
-         buffer.append('\n');
+         buffer.append(LINE_SEPARATOR);
          buffer.append("   ");
          buffer.append(element.write());
          if (element.isObject() || element.hasObject()) {
             ((ObjectElement)(element.getObject())).write(structList);
          }
       }
-      buffer.append('\n');
+      buffer.append(LINE_SEPARATOR);
       buffer.append('}');
       structList.add(buffer.toString());
    }

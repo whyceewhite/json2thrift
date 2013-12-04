@@ -1,16 +1,9 @@
 package org.gee.thrifty.datatype;
 
-import java.util.Map;
-
 import org.gee.thrifty.exception.MergeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 
 public class ListElement extends AbstractElement implements Element {
 
-   private Logger logger = LoggerFactory.getLogger(getClass());
    private Element listType;
    
    public ListElement(Element listType) {
