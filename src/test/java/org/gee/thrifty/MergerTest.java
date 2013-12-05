@@ -1,7 +1,17 @@
 package org.gee.thrifty;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class MergerTest {
+   
+   private Logger logger = LoggerFactory.getLogger(getClass());
 
    /**
     * <p>
@@ -9,7 +19,23 @@ public class MergerTest {
     * {@link org.gee.thrifty.NamespaceScope#ALL} is added to the namespace map.
     * </p>
     */
+   @Test
    public void namespaceWithAllAndOthers() {
+      Merger m = new Merger();
+      m.setInputFile(new File("src//test//resources//simple.json"));
+      m.addNamespace(NamespaceScope.ALL, "hello.there");
+      m.addNamespace(NamespaceScope.JAVA, "hello.there.java");
+      m.addNamespace(NamespaceScope.PYTHON, "hello.there.py");
+      m.addNamespace(NamespaceScope.CPP, "hello.there.cpp");
+      try {
+         String results = m.merge();
+         logger.info(results);
+         int index = results.indexOf("namespace * hello.there");
+         Assert.assertTrue(index >= 0);
+      } catch (IOException e) {
+         logger.error("", e);
+         Assert.fail("An unexpected exception occurred.");
+      }
    }
    
    /**

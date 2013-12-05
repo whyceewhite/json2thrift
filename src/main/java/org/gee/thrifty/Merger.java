@@ -27,10 +27,11 @@ public class Merger {
    
    private int fileMergeCount = 0;
    
-   private File inputDirectory;;
+   private File inputDirectory;
    private File inputFile;
    private File outputFile;
    private Map<NamespaceScope, String> namespaceMap;
+   private String contents;
    
    /**
     * <p>
@@ -52,7 +53,7 @@ public class Merger {
       }
    }
    
-   public void merge() throws IOException {
+   public String merge() throws IOException {
       
       validate();
       
@@ -77,6 +78,7 @@ public class Merger {
       }
       
       this.write(element);
+      return this.contents;
    }
    
    /**
@@ -106,6 +108,92 @@ public class Merger {
    
    /**
     * <p>
+    * Returns the directory containing files of json strings which are
+    * parsed to derive a Thrift definition.
+    * </p>
+    * 
+    * @return A directory containing files of json strings for this instance to
+    *       parse.
+    */
+   public File getInputDirectory() {
+      return this.inputDirectory;
+   }
+   
+   /**
+    * <p>
+    * Sets the directory that contains files which contain json strings. The
+    * json strings are parsed to derive a Thrift definition containing the
+    * elements encountered in the json strings.
+    * </p>
+    * <p>
+    * If both {@link #getInputDirectory()} and {@link #getInputFile(File)} are
+    * not null then {@link #getInputDirectory()} takes precedence.
+    * </p>
+    * 
+    * @param directoryPath The path of directory containing files which contain
+    *       json strings from which a Thrift definition is derived.
+    */
+   public void setInputDirectory(File inputDirectory) {
+      this.inputDirectory = inputDirectory; 
+   }
+   
+   /**
+    * <p>
+    * Returns the file containing json strings that are parsed to derive a
+    * Thrift definition.
+    * </p>
+    * 
+    * @return A file containing json strings for this instance to parse.
+    */
+   public File getInputFile() {
+      return this.inputFile;
+   }
+   
+   /**
+    * <p>
+    * Sets the file that contains one or more json strings that are parsed to
+    * derive a Thrift definition file containing the elements encountered in
+    * the json strings.
+    * </p>
+    * <p>
+    * If both {@link #getInputDirectory()} and {@link #getInputFile(File)} are
+    * not null then {@link #getInputDirectory()} takes precedence.
+    * </p>
+    * @param inputFile The file containing json strings from which a Thrift
+    *       definition is derived.
+    */
+   public void setInputFile(File inputFile) {
+      this.inputFile = inputFile;
+   }
+   
+   /**
+    * <p>
+    * Returns the file to which the derived Thrift definition file is written.
+    * If this is null then the derived Thrift definition may be obtained as a
+    * string from the {@link #merge()} method's returned results or from the
+    * {@link #getContents()} method.
+    * </p>
+    * 
+    * @return The file to which the derived Thrift definition is written.
+    */
+   public File getOutputFile() {
+      return this.outputFile;
+   }
+   
+   /**
+    * <p>
+    * Returns the derived Thrift definition that resulted from reading one or
+    * more json strings during the {@link #merge()} execution.
+    * </p>
+    * 
+    * @return The derived Thrift definition.
+    */
+   public String getContents() {
+      return this.contents;
+   }
+   
+   /**
+    * <p>
     * Writes the Thrift definition that was created based on the set of JSON
     * files used during the merge process. The Thrift definition is written to
     * the file provided at {@link #outputFile} or to the console if no file
@@ -124,17 +212,20 @@ public class Merger {
          return;
       }
       
-      logger.info(fileMergeCount + " files were merged.");
-      OutputStream outputStream = isWriteToFile() ?  new FileOutputStream(this.outputFile) : new ByteArrayOutputStream();
+      logger.info(fileMergeCount + " file" + (fileMergeCount == 1 ? "s were" : " was") + " merged.");
+      
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       writeNamespace(outputStream);
       element.write(outputStream);
       
+      this.contents = outputStream.toString();
       if (this.isWriteToFile()) {
+         FileOutputStream fileOutputStream = new FileOutputStream(this.outputFile);
+         fileOutputStream.write(outputStream.toByteArray());
          logger.info("Wrote json-to-thrift to file " + this.outputFile.getAbsolutePath() + ".");
-         outputStream.close();
-      } else {
-         logger.info("json-to-thrift:\n" + outputStream.toString());
+         fileOutputStream.close();
       }
+      logger.debug("Thrift Definition:\n" + outputStream.toString());
    }
    
    /**
