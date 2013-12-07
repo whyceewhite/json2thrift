@@ -2,16 +2,16 @@ package org.gee.thrifty.datatype;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.gee.thrifty.exception.MergeException;
 
 public class ObjectElement extends AbstractElement implements Element {
    
-   private final static byte[] LINE_SEPARATOR = System.getProperty("line.separator").getBytes(); 
+   private final static String LINE_SEPARATOR = System.getProperty("line.separator");
    private String structName;
    private Map<String, Element> elements;
    private int mergeCount;
@@ -90,11 +90,11 @@ public class ObjectElement extends AbstractElement implements Element {
    }
    
    public void write(OutputStream outstream) throws IOException {
-      TreeSet<String> structCollection = new TreeSet<String>();
+      Collection<String> structCollection = new ArrayList<String>();
       this.write(structCollection);
       for (String struct : structCollection) {
          outstream.write(struct.getBytes());
-         outstream.write(LINE_SEPARATOR);
+         outstream.write(LINE_SEPARATOR.getBytes());
       }
    }
    

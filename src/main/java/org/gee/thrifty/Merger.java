@@ -212,7 +212,7 @@ public class Merger {
          return;
       }
       
-      logger.info(fileMergeCount + " file" + (fileMergeCount == 1 ? "s were" : " was") + " merged.");
+      logger.info(fileMergeCount + " file" + (fileMergeCount != 1 ? "s were" : " was") + " merged.");
       
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       writeNamespace(outputStream);
@@ -225,7 +225,7 @@ public class Merger {
          logger.info("Wrote json-to-thrift to file " + this.outputFile.getAbsolutePath() + ".");
          fileOutputStream.close();
       }
-      logger.debug("Thrift Definition:\n" + outputStream.toString());
+      logger.info("Thrift Definition:\n" + this.contents);
    }
    
    /**
