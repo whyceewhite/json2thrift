@@ -21,12 +21,45 @@ import org.gee.thrifty.exception.InvalidRuntimeArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * <p>
+ * This class reads a file that contains one or more json strings and derives a
+ * Thrift definition that matches the structure of the combined json strings. A
+ * directory containing multiple files of json strings may also be used instead
+ * of reading in a single file.
+ * </p>
+ * <p>
+ * While only one json string is necessary to derive a Thrift definition, the
+ * option to evaluate many json files of the same structure assures that a more
+ * relevant Thrift definition can be derived. This is because if a json string
+ * does not contain a data element (i.e., it is null or it is missing from the
+ * json string) then the datatype or the element itself cannot be determined.
+ * However, a subsequent json string of the same structure may contain the
+ * element that was missing from the previous json string and, thereby, allow
+ * the merger to ascertain its existence and datatype.
+ * </p>
+ * <p>
+ * To execute this class, call the {@link #merge()} method. Prior to executing
+ * the method, use the attributes listed in the table below to tailor the
+ * execution.
+ * </p>
+ * <p>
+ * <table>
+ * <tr><td><b>Parameter</b></td><td><b>Required</b></td><td><b>Purpose</b></td></tr>
+ * <tr><td>inputDirectory</td><td>Yes, if inputFile is not provided.</td><td>A directory containing files of JSON string to read.</td></tr>
+ * <tr><td>inputFile</td><td>Yes, if inputDirectory is not provided.</td><td>A file containing one or more JSON strings. If inputDirectory is provided then inputDirectory takes precedence.</td></tr>
+ * <tr><td>outputFile</td><td>No</td><td>The file where to write the definition.</td></tr>
+ * <tr><td>namespaceMap</td><td>No</td><td>Provides a language scope and the namespace to assign to the scope.</td></tr>
+ * </table>
+ * </p>
+ */
 public class Merger {
    
    private Logger logger = LoggerFactory.getLogger(getClass());
    
    private int fileMergeCount = 0;
    
+   private String rootStructName;
    private File inputDirectory;
    private File inputFile;
    private File outputFile;
@@ -77,6 +110,7 @@ public class Merger {
          logger.error("An error occurred during processing. " + fileMergeCount + " files were processed prior to the error.", e);
       }
       
+      element.setName(this.rootStructName);
       this.write(element);
       return this.contents;
    }
@@ -182,6 +216,18 @@ public class Merger {
    
    /**
     * <p>
+    * Sets the file to where the derived Thrift definition is written.
+    * </p>
+    * 
+    * @param outputFile The file to where the derived Thrift definition is
+    *       written.
+    */
+   public void setOutputFile(File outputFile) {
+      this.outputFile = outputFile;
+   }
+   
+   /**
+    * <p>
     * Returns the derived Thrift definition that resulted from reading one or
     * more json strings during the {@link #merge()} execution.
     * </p>
@@ -190,6 +236,31 @@ public class Merger {
     */
    public String getContents() {
       return this.contents;
+   }
+   
+   /**
+    * <p>
+    * The name of the root structure generated from the merge.
+    * </p>
+    * 
+    * @return The name of the root structure.
+    */
+   public String getRootStructName() {
+      return this.rootStructName;
+   }
+   
+   /**
+    * <p>
+    * Assigns a name to the root structure that is generated from the merge
+    * execution. A null or empty value will result in the default structure
+    * name.
+    * </p>
+    * 
+    * @param rootName The name to assign the root structure. A null or empty
+    *       value will result in the default structure name.
+    */
+   public void setRootStructName(String rootName) {
+      this.rootStructName = (rootName == null || rootName.isEmpty() ? null : rootName);
    }
    
    /**
@@ -388,20 +459,22 @@ public class Merger {
          return;
       }
       
-      Pattern pattern = Pattern.compile("-(inputDirectory|inputFile|outputFile|nsAll|nsJava|nsCpp|nsPython|nsPerl|nsRuby|nsCocoa|nsCsharp)=\"?(.*)\"?");
+      Pattern pattern = Pattern.compile("-(inputDirectory|inputFile|outputFile|rootStructName|nsAll|nsJava|nsCpp|nsPython|nsPerl|nsRuby|nsCocoa|nsCsharp)=\"?(.*)\"?");
       for (String argument : args) {
-         
          Matcher matcher = pattern.matcher(argument);
          if (matcher.matches()) {
-
+            
             String argName = matcher.group(1);
             String argValue = matcher.group(2);
+            
             if (argName.equals("inputDirectory")) {
-               this.inputDirectory = new File(argValue);
+               this.setInputDirectory(new File(argValue));
             } else if (argName.equals("inputFile")) {
-               this.inputFile = new File(argValue);
+               this.setInputFile(new File(argValue));
             } else if (argName.equals("outputFile")) {
-               this.outputFile = new File(argValue);
+               this.setOutputFile(new File(argValue));
+            } else if (argName.equals("rootStructName")) {
+               this.setRootStructName(argValue);
             } else if (argName.equals("nsAll")) {
                this.addNamespace(NamespaceScope.ALL, argValue);
             } else if (argName.equals("nsJava")) {
