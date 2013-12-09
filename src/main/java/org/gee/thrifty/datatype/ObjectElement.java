@@ -58,7 +58,7 @@ public class ObjectElement extends AbstractElement implements Element {
       return this.structName;
    }
    
-   protected Map<String, Element> getElements() {
+   public Map<String, Element> getElements() {
       return this.elements;
    }
    
