@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * the merger to ascertain its existence and datatype.
  * </p>
  * <p>
- * To execute this class, call the {@link #merge()} method. Prior to executing
+ * To execute this class, call the {@link #process()} method. Prior to executing
  * the method, use the attributes listed in the table below to tailor the
  * execution.
  * </p>
@@ -80,13 +80,22 @@ public class Merger {
       Merger m = new Merger();
       try {
          m.parseArguments(args);
-         m.merge();
+         m.process();
       } catch (InvalidRuntimeArgumentException e) {
          m.printHelp();
       }
    }
    
-   public String merge() throws IOException {
+   /**
+    * <p>
+    * Eval the set of files provided.
+    * </p>
+    * 
+    * @return  A string that represents a thrift definition based on the json
+    *          strings provided during this execution. 
+    * @throws  IOException If an error occurs when writing the results.
+    */
+   public String process() throws IOException {
       
       validate();
       
@@ -204,7 +213,7 @@ public class Merger {
     * <p>
     * Returns the file to which the derived Thrift definition file is written.
     * If this is null then the derived Thrift definition may be obtained as a
-    * string from the {@link #merge()} method's returned results or from the
+    * string from the {@link #process()} method's returned results or from the
     * {@link #getContents()} method.
     * </p>
     * 
@@ -229,7 +238,7 @@ public class Merger {
    /**
     * <p>
     * Returns the derived Thrift definition that resulted from reading one or
-    * more json strings during the {@link #merge()} execution.
+    * more json strings during the {@link #process()} execution.
     * </p>
     * 
     * @return The derived Thrift definition.
