@@ -13,13 +13,13 @@ package org.gee.thrifty;
 public enum NamespaceScope {
    
    ALL("*"),
-   CPP("cpp"),
-   JAVA("java"),
-   PYTHON("py"),
-   PERL("perl"),
-   RUBY("rb"),
    COCOA("cocoa"),
-   CSHARP("csharp");
+   CPP("cpp"),
+   CSHARP("csharp"),
+   JAVA("java"),
+   PERL("perl"),
+   PYTHON("py"),
+   RUBY("rb");
    
    private String code;
    
