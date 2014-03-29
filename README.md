@@ -69,7 +69,19 @@ And, as a result, will produce the following thrift definition:
     }
 
 ## Installation
-tbd
+### System Requirements
+
+* JDK 1.6
+* Maven 3.0.4
+
+### Building
+
+The **thrifty json2thrift** utility runs as a command line program. Therefore, to quickly use the tool, clone this repository and run maven to build the library.
+
+    git clone git@github.com:whyceewhite/json2thrift.git
+    cd json2thrift
+    mvn package
+    
 
 ## Usage
 ### Command Line Usage
