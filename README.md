@@ -71,8 +71,8 @@ And, as a result, will produce the following thrift definition:
 ## Installation
 ### System Requirements
 
-* JDK 1.6
-* Maven 3.0.4
+* JDK 1.6+
+* Maven 3.0.4+
 
 ### Building
 
@@ -173,9 +173,6 @@ Would yield the following structure:
         2: optional Name name;
     }
 
-
-### API Usage
-tbd
 
 ## Release History
 Current - 0.1.0-SNAPSHOT
