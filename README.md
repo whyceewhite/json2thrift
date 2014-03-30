@@ -80,45 +80,40 @@ The **thrifty json2thrift** utility runs as a command line program. Therefore, t
 
     git clone git@github.com:whyceewhite/json2thrift.git
     cd json2thrift
-    mvn package
+    mvn install
+    bin/thrift-cli.sh <options>
     
 
 ## Usage
 ### Command Line Usage
 To execute thrifty, run the thrifty jar on the command line with the following arguments:
 
-    -inputDirectory=<directory> [options]
-Or
-
-    -inputFile=<filename> [options]
-
-Where:
-* **-inputDirectory** - A directory containing zero or more files of json objects which is read by the processor to derive a Thrift definition. This value is required unless **inputFile** is given. 
-
-* **-inputFile** - A file containing zero or more json objects which are read by the processor to derive a Thrift definition. This value is required unless **inputDirectory** is given.
-
-
-The options:
-
-* **-outputFile** - The file to where the generated Thrift definition is saved upon completion of processing. If no value is given then the output is written to the console.
-
-* **-rootStructName** - The name to give the root structure in the Thrift definition. By default, this value is "Root."
-
-* **-nsAll** - The namespace to apply to the Thrift definition. This will represent all languages. If other namespace languages are provided then this namespace value takes precedence.
-
-* **-nsJava** - The java namespace to apply to the Thrift definition.
-
-* **-nsCpp** - The C++ namespace to apply to the Thrift definition.
-
-* **-nsPython** - The Python namespace to apply to the Thrift definition.
-
-* **-nsPerl** - The Perl namespace to apply to the Thrift definition.
-
-* **-nsRuby** - The Ruby namespace to apply to the Thrift definition.
-
-* **-nsCocoa** - The Cocoa namespace to apply to the Thrift definition.
-
-* **-nsCsharp** - The C# namespace to apply to the Thrift definition.
+    -h (--help)             : Displays the usage information.
+    -i (--input-file) FILE  : A file containing JSON objects to derive a Thrift
+                              struct definition. Or, a directory containing many
+                              JSON files. Required.
+    -n (--root-name) VAL    : The name of the root Thrift struct. If not provided
+                              then the root struct name is defaulted to Root.
+    -ns (--set-ns-all) VAL  : The namespace to apply to all supported languages.
+                              Setting this value overrides the namespace setting
+                              of any specific language.
+    -o (--output-file) FILE : The file to which the derived Thrift struct is
+                              written. If not provided then the struct is written
+                              to standard out.
+    --set-ns-cocoa VAL      : Indicates that the definition should include the
+                              given namespace for the Cocoa language.
+    --set-ns-cpp VAL        : Indicates that the definition should include the
+                              given namespace for the CPP language.
+    --set-ns-csharp VAL     : Indicates that the definition should include the
+                              given namespace for the Csharp language.
+    --set-ns-java VAL       : Indicates that the definition should include the
+                              given namespace for the Java language.
+    --set-ns-perl VAL       : Indicates that the definition should include the
+                              given namespace for the Perl language.
+    --set-ns-python VAL     : Indicates that the definition should include the
+                              given namespace for the Python language.
+    --set-ns-ruby VAL       : Indicates that the definition should include the
+                              given namespace for the Ruby language.
 
 
 The following subsections are examples with various options and will all refer, for demonstration purposes, to a json structure that looks like this:
@@ -137,11 +132,11 @@ The following subsections are examples with various options and will all refer, 
 
 The example below will read all files within the /tmp/thrifty/data directory and write the output to a file called /tmp/thrifty/out/run1.thrift.
 
-    java -jar ./thrift.jar -inputDirectory=/tmp/thrifty/data -outputFile=/tmp/thrifty/out/run1.thrift
+    bin/thrifty-cli.sh -i /tmp/thrifty/data -o /tmp/thrifty/out/run1.thrift
 
 #### Example - Specifying a root structure name
 
-    java -jar ./thrift.jar -inputFile=/tmp/thrifty/data/json1.json -rootStructName=Person
+    bin/thrifty-cli.sh -i /tmp/thrifty/data/json1.json -n Person
 
 Would yield the following structure:
 
@@ -157,7 +152,7 @@ Would yield the following structure:
 
 #### Example - Specifying a namespace
 
-    java -jar ./thrift.jar -inputFile=/tmp/thrifty/data/json1.json -nsJava=org.test.thrift
+    bin/thrifty-cli.sh -i /tmp/thrifty/data/json1.json --set-ns-java org.test.thrift
 
 Would yield the following structure:
 
