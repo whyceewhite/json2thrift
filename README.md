@@ -81,12 +81,11 @@ The **thrifty json2thrift** utility runs as a command line program. Therefore, t
     git clone git@github.com:whyceewhite/json2thrift.git
     cd json2thrift
     mvn install
-    bin/thrift-cli.sh <options>
     
 
 ## Usage
 ### Command Line Usage
-To execute thrifty, run the thrifty jar on the command line with the following arguments:
+To execute thrifty, run the thrifty jar or the `bin/thrifty-cli.sh` on the command line with the following arguments:
 
     -h (--help)             : Displays the usage information.
     -i (--input-file) FILE  : A file containing JSON objects to derive a Thrift
