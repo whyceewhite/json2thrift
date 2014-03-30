@@ -1,6 +1,6 @@
 package puck.thrifty.datatype;
 
-import puck.thrifty.exception.MergeException;
+import puck.thrifty.MergerException;
 
 
 public class DoubleElement extends AbstractElement implements NumberElement {
@@ -13,11 +13,11 @@ public class DoubleElement extends AbstractElement implements NumberElement {
       return "double";
    }
    
-   public Element merge(Element element) throws MergeException {
+   public Element merge(Element element) throws MergerException {
       if (element == null || this == element || element.isUnknown() || element instanceof NumberElement) {
          return this;
       }
-      throw new MergeException(this, element);
+      throw new MergerException(this, element);
    }
 
 }

@@ -1,6 +1,6 @@
 package puck.thrifty.datatype;
 
-import puck.thrifty.exception.MergeException;
+import puck.thrifty.MergerException;
 
 
 public interface Element {
@@ -18,6 +18,6 @@ public interface Element {
    public int getOrder();
    public void setOrder(int order);
    
-   public Element merge(Element element) throws MergeException;
+   public Element merge(Element element) throws MergerException;
    public String write();
 }

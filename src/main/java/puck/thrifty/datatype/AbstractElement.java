@@ -1,6 +1,6 @@
 package puck.thrifty.datatype;
 
-import puck.thrifty.exception.MergeException;
+import puck.thrifty.MergerException;
 
 
 
@@ -24,13 +24,13 @@ public abstract class AbstractElement implements Element {
       return false;
    }
    
-   public Element merge(Element element) throws MergeException {
+   public Element merge(Element element) throws MergerException {
       if (element == null || this == element || element.isUnknown() || this.getClass().equals(element.getClass())) {
          return this;
       } else if (this.isUnknown()) {
          return element;
       }
-      throw new MergeException(this, element);
+      throw new MergerException(this, element);
    }
    
    protected String writeTypeAndName() {

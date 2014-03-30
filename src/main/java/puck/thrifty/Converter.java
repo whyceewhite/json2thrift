@@ -37,10 +37,12 @@ import com.fasterxml.jackson.databind.type.MapType;
  * However, because the root structure name is set upon instantiation, all parse
  * calls will result in a root structure with the same name.
  * </p> 
+ * 
+ * @author ywhite
  */
 public class Converter {
    
-   private Logger logger = LoggerFactory.getLogger(getClass());
+   private static Logger logger = LoggerFactory.getLogger(Converter.class);
    
    private final static String ROOT_STRUCT_NAME = "root";
    

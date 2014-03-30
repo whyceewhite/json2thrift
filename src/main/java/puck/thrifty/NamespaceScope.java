@@ -9,6 +9,8 @@ package puck.thrifty;
  * <p>
  * The namespace is also known as package or module depending on the language.
  * </p> 
+ * 
+ * @author ywhite
  */
 public enum NamespaceScope {
    

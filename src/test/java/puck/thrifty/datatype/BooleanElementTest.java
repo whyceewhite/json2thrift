@@ -3,6 +3,7 @@ package puck.thrifty.datatype;
 import org.junit.Assert;
 import org.junit.Test;
 
+import puck.thrifty.MergerException;
 import puck.thrifty.datatype.BooleanElement;
 import puck.thrifty.datatype.DoubleElement;
 import puck.thrifty.datatype.Element;
@@ -12,7 +13,6 @@ import puck.thrifty.datatype.LongElement;
 import puck.thrifty.datatype.ObjectElement;
 import puck.thrifty.datatype.StringElement;
 import puck.thrifty.datatype.UnknownElement;
-import puck.thrifty.exception.MergeException;
 
 /**
  * <p>
@@ -90,7 +90,7 @@ public class BooleanElementTest {
    public void mergeWithDouble() {
       try {
          new BooleanElement("test").merge(new DoubleElement("test"));
-      } catch (MergeException e) {
+      } catch (MergerException e) {
       }
    }
    
@@ -98,7 +98,7 @@ public class BooleanElementTest {
    public void mergeWithInteger() {
       try {
          new BooleanElement("test").merge(new IntegerElement("test"));
-      } catch (MergeException e) {
+      } catch (MergerException e) {
       }
    }
    
@@ -106,7 +106,7 @@ public class BooleanElementTest {
    public void mergeWithLong() {
       try {
          new BooleanElement("test").merge(new LongElement("test"));
-      } catch (MergeException e) {
+      } catch (MergerException e) {
       }
    }
    
@@ -114,7 +114,7 @@ public class BooleanElementTest {
    public void mergeWithString() {
       try {
          new BooleanElement("test").merge(new StringElement("test"));
-      } catch (MergeException e) {
+      } catch (MergerException e) {
       }
    }
    
@@ -123,7 +123,7 @@ public class BooleanElementTest {
       try {
          new BooleanElement("test").merge(new ListElement(new BooleanElement("test")));
          Assert.fail();
-      } catch (MergeException e) {
+      } catch (MergerException e) {
       }
    }
    
@@ -132,7 +132,7 @@ public class BooleanElementTest {
       try {
          new BooleanElement("test").merge(new ObjectElement("test"));
          Assert.fail();
-      } catch (MergeException e) {
+      } catch (MergerException e) {
       }
    }
    

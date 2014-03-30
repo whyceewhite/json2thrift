@@ -1,6 +1,6 @@
 package puck.thrifty.datatype;
 
-import puck.thrifty.exception.MergeException;
+import puck.thrifty.MergerException;
 
 
 
@@ -14,7 +14,7 @@ public class LongElement extends AbstractElement implements NumberElement {
       return "i64";
    }
    
-   public Element merge(Element element) throws MergeException {
+   public Element merge(Element element) throws MergerException {
       if (element == null || this == element || element.isUnknown() || this.getClass().equals(element.getClass())) {
          return this;
       } else if (element.getClass().equals(DoubleElement.class)) {
@@ -22,7 +22,7 @@ public class LongElement extends AbstractElement implements NumberElement {
       } else if (element instanceof NumberElement) {
          return this;
       }
-      throw new MergeException(this, element);
+      throw new MergerException(this, element);
    }
 
 }

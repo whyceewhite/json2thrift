@@ -13,14 +13,11 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import puck.thrifty.datatype.ObjectElement;
-import puck.thrifty.exception.InvalidRuntimeArgumentException;
 
 /**
  * <p>
@@ -47,21 +44,22 @@ import puck.thrifty.exception.InvalidRuntimeArgumentException;
  * <p>
  * <table>
  * <tr><td><b>Parameter</b></td><td><b>Required</b></td><td><b>Purpose</b></td></tr>
- * <tr><td>inputDirectory</td><td>Yes, if inputFile is not provided.</td><td>A directory containing files of JSON string to read.</td></tr>
- * <tr><td>inputFile</td><td>Yes, if inputDirectory is not provided.</td><td>A file containing one or more JSON strings. If inputDirectory is provided then inputDirectory takes precedence.</td></tr>
+ * <tr><td>inputFile</td><td>Yes</td><td>A file containing one or more JSON strings or a directory containing files of JSON string to read.</td></tr>
  * <tr><td>outputFile</td><td>No</td><td>The file where to write the definition.</td></tr>
  * <tr><td>namespaceMap</td><td>No</td><td>Provides a language scope and the namespace to assign to the scope.</td></tr>
+ * <tr><td>rootStructName</td><td>No</td><td>Specifies the name to give to the derived root Thrift struct. By default, the name is 'Root'.</td></tr>
  * </table>
  * </p>
+ * 
+ * @author ywhite
  */
 public class Merger {
    
-   private Logger logger = LoggerFactory.getLogger(getClass());
+   private static Logger logger = LoggerFactory.getLogger(Merger.class);
    
    private int fileMergeCount = 0;
    
    private String rootStructName;
-   private File inputDirectory;
    private File inputFile;
    private File outputFile;
    private Map<NamespaceScope, String> namespaceMap;
@@ -76,52 +74,52 @@ public class Merger {
       namespaceMap = new TreeMap<NamespaceScope, String>();
    }
    
-   public static void main(String[] args) throws Exception {
-      
-      Merger m = new Merger();
-      try {
-         m.parseArguments(args);
-         m.process();
-      } catch (InvalidRuntimeArgumentException e) {
-         m.printHelp();
-      }
-   }
-   
    /**
     * <p>
-    * Eval the set of files provided.
+    * Evaluate the file or set of files provided.
     * </p>
     * 
     * @return  A string that represents a thrift definition based on the json
     *          strings provided during this execution. 
     * @throws  IOException If an error occurs when writing the results.
     */
-   public String process() throws IOException {
+   public String process() throws MergerException {
       
       validate();
       
       ObjectElement element = null;
       try {
-         if (this.inputDirectory != null) {
-            File[] files = this.inputDirectory.listFiles();
+         if (this.getInputFile().isDirectory()) {
+            File[] files = this.getInputFile().listFiles();
             if (files != null) {
                for (File jsonFile : files) {
-                  logger.info("Processing file " + jsonFile.getAbsolutePath());
-                  element = this.merge(new FileInputStream(jsonFile), element);
-                  fileMergeCount++;
+                  if (jsonFile.canRead()) {
+                     logger.info("Processing file " + jsonFile.getAbsolutePath());
+                     element = this.merge(new FileInputStream(jsonFile), element);
+                     fileMergeCount++;
+                  } else {
+                     logger.warn("No read access to file " + jsonFile.getAbsolutePath() + "; skipping." );
+                  }
                }
             }
-         } else if (this.inputFile != null) {
+         } else {
             logger.info("Processing file " + this.inputFile.getAbsolutePath());
             element = this.merge(new FileInputStream(this.inputFile));
             fileMergeCount++;
          }
+         
+         if (this.hasCustomRootStructName()) {
+            element.setName(this.getRootStructName());
+         }
+         this.write(element);
+         
+      } catch (IOException e) {
+         logger.error("", e);
+         throw new MergerException(e.getMessage());
       } catch (Exception e) {
          logger.error("An error occurred during processing. " + fileMergeCount + " files were processed prior to the error.", e);
       }
       
-      element.setName(this.rootStructName);
-      this.write(element);
       return this.contents;
    }
    
@@ -133,17 +131,17 @@ public class Merger {
     * namespace will not be added.
     * </p>
     * 
-    * @param scope The language, or scope, to which the namespace name is
-    *       applied. Required.
-    * @param namespace The name of the namespace. Required.
-    * @return true if the namespace is added and false if not. If either the
-    *       scope or the namespace is not provided then the namespace will not
-    *       be added.
+    * @param   scope The language, or scope, to which the namespace name is
+    *          applied. Required.
+    * @param   namespace The name of the namespace. Required.
+    * @return  true if the namespace is added and false if not. If either the
+    *          scope or the namespace is not provided then the namespace will
+    *          not be added.
     */
    public boolean addNamespace(NamespaceScope scope, String namespace) {
       
       if (scope == null || namespace == null || namespace.trim().isEmpty()) {
-         logger.warn("A namespace was not added because either the scope or the namespace name was not provided. The values given were: scope = '" + scope + "', namespace = '" + namespace + "'.");
+         logger.debug("A namespace was not added because either the scope or the namespace name was not provided. The values given were: scope = '" + scope + "', namespace = '" + namespace + "'.");
          return false;
       }
       this.namespaceMap.put(scope, namespace);
@@ -152,42 +150,14 @@ public class Merger {
    
    /**
     * <p>
-    * Returns the directory containing files of json strings which are
-    * parsed to derive a Thrift definition.
-    * </p>
-    * 
-    * @return A directory containing files of json strings for this instance to
-    *       parse.
-    */
-   public File getInputDirectory() {
-      return this.inputDirectory;
-   }
-   
-   /**
-    * <p>
-    * Sets the directory that contains files which contain json strings. The
-    * json strings are parsed to derive a Thrift definition containing the
-    * elements encountered in the json strings.
-    * </p>
-    * <p>
-    * If both {@link #getInputDirectory()} and {@link #getInputFile(File)} are
-    * not null then {@link #getInputDirectory()} takes precedence.
-    * </p>
-    * 
-    * @param directoryPath The path of directory containing files which contain
-    *       json strings from which a Thrift definition is derived.
-    */
-   public void setInputDirectory(File inputDirectory) {
-      this.inputDirectory = inputDirectory; 
-   }
-   
-   /**
-    * <p>
     * Returns the file containing json strings that are parsed to derive a
     * Thrift definition.
+    * Alternatively, the file may be a directory containing files of json
+    * strings which are parsed to derive a Thrift definition.
     * </p>
     * 
-    * @return A file containing json strings for this instance to parse.
+    * @return  A file or directory containing json strings for this instance
+    *          to parse.
     */
    public File getInputFile() {
       return this.inputFile;
@@ -197,14 +167,12 @@ public class Merger {
     * <p>
     * Sets the file that contains one or more json strings that are parsed to
     * derive a Thrift definition file containing the elements encountered in
-    * the json strings.
+    * the json strings. Alternatively, the file may be a directory containing
+    * multiple files which contain json strings.
     * </p>
-    * <p>
-    * If both {@link #getInputDirectory()} and {@link #getInputFile(File)} are
-    * not null then {@link #getInputDirectory()} takes precedence.
-    * </p>
-    * @param inputFile The file containing json strings from which a Thrift
-    *       definition is derived.
+    * 
+    * @param   inputFile The file containing json strings from which a Thrift
+    *          definition is derived.
     */
    public void setInputFile(File inputFile) {
       this.inputFile = inputFile;
@@ -218,7 +186,7 @@ public class Merger {
     * {@link #getContents()} method.
     * </p>
     * 
-    * @return The file to which the derived Thrift definition is written.
+    * @return  The file to which the derived Thrift definition is written.
     */
    public File getOutputFile() {
       return this.outputFile;
@@ -229,8 +197,8 @@ public class Merger {
     * Sets the file to where the derived Thrift definition is written.
     * </p>
     * 
-    * @param outputFile The file to where the derived Thrift definition is
-    *       written.
+    * @param   outputFile The file to where the derived Thrift definition is
+    *          written.
     */
    public void setOutputFile(File outputFile) {
       this.outputFile = outputFile;
@@ -242,7 +210,7 @@ public class Merger {
     * more json strings during the {@link #process()} execution.
     * </p>
     * 
-    * @return The derived Thrift definition.
+    * @return  The derived Thrift definition.
     */
    public String getContents() {
       return this.contents;
@@ -253,7 +221,7 @@ public class Merger {
     * The name of the root structure generated from the merge.
     * </p>
     * 
-    * @return The name of the root structure.
+    * @return  The name of the root structure.
     */
    public String getRootStructName() {
       return this.rootStructName;
@@ -266,8 +234,8 @@ public class Merger {
     * name.
     * </p>
     * 
-    * @param rootName The name to assign the root structure. A null or empty
-    *       value will result in the default structure name.
+    * @param   rootName The name to assign the root structure. A null or empty
+    *          value will result in the default structure name.
     */
    public void setRootStructName(String rootName) {
       this.rootStructName = (rootName == null || rootName.isEmpty() ? null : rootName);
@@ -281,10 +249,10 @@ public class Merger {
     * was given. 
     * </p>
     * 
-    * @param element The element that is the composite of the JSON files given
-    *       for the merge.
-    * @throws IOException If an error occurs while writing the Thrift
-    *       definition to the file.
+    * @param   element The element that is the composite of the JSON files given
+    *          for the merge.
+    * @throws  IOException If an error occurs while writing the Thrift
+    *          definition to the file.
     */
    private void write(ObjectElement element) throws IOException {
       
@@ -333,9 +301,9 @@ public class Merger {
     * name of the namespace. Returns the string as an array of bytes.
     * </p>
     * 
-    * @param nsScope The namespace scope. Required.
-    * @param namespace The name of the namespace. Reqired.
-    * @return A Thrift IDL statement that defines a namespace.
+    * @param   nsScope The namespace scope. Required.
+    * @param   namespace The name of the namespace. Reqired.
+    * @return  A Thrift IDL statement that defines a namespace.
     */
    private byte[] writeNamespace(NamespaceScope nsScope, String namespace) {
       return new StringBuffer("namespace ")
@@ -355,30 +323,6 @@ public class Merger {
     */
    private boolean isWriteToFile() {
       return this.outputFile != null;
-   }
-   
-   /**
-    * <p>
-    * Confirms that the required parameters for processing the merge are
-    * available. If they are not then an exception is thrown.
-    * </p>
-    * 
-    * @throws InvalidRuntimeArgumentException If required parameters are not
-    *       available.
-    */
-   private void validate() throws InvalidRuntimeArgumentException {
-      
-      if (this.inputDirectory == null && this.inputFile == null) {
-         throw new InvalidRuntimeArgumentException("Either the inputDirectory or the inputFile must be specified prior to execution.");
-      }
-      
-      if (this.inputDirectory != null && !this.inputDirectory.isDirectory()) {
-         throw new InvalidRuntimeArgumentException("The inputDirectory '" + this.inputDirectory + "' is not a directory.");
-      }
-      
-      if (this.inputDirectory == null && this.inputFile != null && !this.inputFile.isFile()) {
-         throw new InvalidRuntimeArgumentException("The inputFile '" + this.inputFile + "' is not a file.");
-      }
    }
    
    ObjectElement merge(InputStream stream, ObjectElement element) throws IOException {
@@ -423,8 +367,8 @@ public class Merger {
     * instance.
     * </p>
     * 
-    * @param json The json string to parse. Required.
-    * @return The json string represented as an ObjectElement.
+    * @param   json The json string to parse. Required.
+    * @return  The json string represented as an ObjectElement.
     */
    private ObjectElement parse(String json) {
       return new Converter().parse(json);
@@ -435,10 +379,10 @@ public class Merger {
     * Reads the given input stream's contents and returns it as a string.
     * </p>
     * 
-    * @param inputStream The input stream to read. Required.
-    * @return The input stream's contents as a string.
-    * @throws IOException If an error occurs while accessing, reading or
-    *       closing the file.
+    * @param   inputStream The input stream to read. Required.
+    * @return  The input stream's contents as a string.
+    * @throws  IOException If an error occurs while accessing, reading or
+    *          closing the file.
     */
    private String toString(InputStream inputStream) throws IOException {
       
@@ -458,64 +402,34 @@ public class Merger {
    
    /**
     * <p>
-    * Parses the command line for the arguments needed to run this program.
+    * Validates that the arguments needed for processing are properly
+    * established. If not then an exception is thrown.
     * </p>
     * 
-    * @param args The arguments from the command line.
+    * @throws  MergerException If the arguments required for proper processing
+    *          are not established.
     */
-   private void parseArguments(String[] args)  {
+   private void validate() throws MergerException {
       
-      if (args == null) {
-         return;
-      }
-      
-      Pattern pattern = Pattern.compile("-(inputDirectory|inputFile|outputFile|rootStructName|nsAll|nsJava|nsCpp|nsPython|nsPerl|nsRuby|nsCocoa|nsCsharp)=\"?(.*)\"?");
-      for (String argument : args) {
-         Matcher matcher = pattern.matcher(argument);
-         if (matcher.matches()) {
-            
-            String argName = matcher.group(1);
-            String argValue = matcher.group(2);
-            
-            if (argName.equals("inputDirectory")) {
-               this.setInputDirectory(new File(argValue));
-            } else if (argName.equals("inputFile")) {
-               this.setInputFile(new File(argValue));
-            } else if (argName.equals("outputFile")) {
-               this.setOutputFile(new File(argValue));
-            } else if (argName.equals("rootStructName")) {
-               this.setRootStructName(argValue);
-            } else if (argName.equals("nsAll")) {
-               this.addNamespace(NamespaceScope.ALL, argValue);
-            } else if (argName.equals("nsJava")) {
-               this.addNamespace(NamespaceScope.JAVA, argValue);
-            } else if (argName.equals("nsCpp")) {
-               this.addNamespace(NamespaceScope.CPP, argValue);
-            } else if (argName.equals("nsPython")) {
-               this.addNamespace(NamespaceScope.PYTHON, argValue);
-            } else if (argName.equals("nsPerl")) {
-               this.addNamespace(NamespaceScope.PERL, argValue);
-            } else if (argName.equals("nsRuby")) {
-               this.addNamespace(NamespaceScope.RUBY, argValue);
-            } else if (argName.equals("nsCocoa")) {
-               this.addNamespace(NamespaceScope.COCOA, argValue);
-            } else if (argName.equals("nsCsharp")) {
-               this.addNamespace(NamespaceScope.CSHARP, argValue);
-            }
-            logger.debug("Runtime argument established | " + argName + " = " + argValue);
+      if (this.inputFile == null) {
+         throw new MergerException("The input file or directory is required.");
+      } else {
+         if (this.inputFile.isFile() && !this.inputFile.canRead()) {
+            throw new MergerException("There is no access to read the given input file.");
          }
       }
    }
    
    /**
     * <p>
-    * Prints to System.out the runtime arguments that may be used to execute
-    * this utility.
+    * Answers true if a non-default root struct name was provided and false if
+    * not.
     * </p>
+    * 
+    * @return  true if a root struct name was specified and false if not.
     */
-   private void printHelp() {
-      // TODO: fill in.
-      System.out.println("help goes here. :D");
+   private boolean hasCustomRootStructName() {
+      return this.getRootStructName() != null && !this.getRootStructName().trim().isEmpty();
    }
-   
+        
 }

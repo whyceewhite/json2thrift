@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
-import puck.thrifty.exception.MergeException;
+import puck.thrifty.MergerException;
 
 public class ObjectElement extends AbstractElement implements Element {
    
@@ -66,12 +66,12 @@ public class ObjectElement extends AbstractElement implements Element {
       return this.mergeCount;
    }
    
-   public Element merge(Element element) throws MergeException {
+   public Element merge(Element element) throws MergerException {
       if (element == null || this == element || element.isUnknown()) {
          return this;
       }
       if (!this.getClass().getName().equals(element.getClass().getName())) {
-         throw new MergeException(this, element);
+         throw new MergerException(this, element);
       }
       Map<String, Element> elementsMap = ((ObjectElement)element).getElements();
       for (String elementKey : elementsMap.keySet()) {

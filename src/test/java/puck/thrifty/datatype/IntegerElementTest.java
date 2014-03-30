@@ -3,6 +3,7 @@ package puck.thrifty.datatype;
 import org.junit.Assert;
 import org.junit.Test;
 
+import puck.thrifty.MergerException;
 import puck.thrifty.datatype.BooleanElement;
 import puck.thrifty.datatype.DoubleElement;
 import puck.thrifty.datatype.Element;
@@ -12,7 +13,6 @@ import puck.thrifty.datatype.LongElement;
 import puck.thrifty.datatype.ObjectElement;
 import puck.thrifty.datatype.StringElement;
 import puck.thrifty.datatype.UnknownElement;
-import puck.thrifty.exception.MergeException;
 
 
 public class IntegerElementTest {
@@ -78,7 +78,7 @@ public class IntegerElementTest {
    public void mergeWithBoolean() {
       try {
          new IntegerElement("test").merge(new BooleanElement("test"));
-      } catch (MergeException e) {
+      } catch (MergerException e) {
       }
    }
    
@@ -94,7 +94,7 @@ public class IntegerElementTest {
    public void mergeWithString() {
       try {
          new IntegerElement("test").merge(new StringElement("test"));
-      } catch (MergeException e) {
+      } catch (MergerException e) {
       }
    }
    
@@ -103,7 +103,7 @@ public class IntegerElementTest {
       try {
          new IntegerElement("test").merge(new ListElement(new IntegerElement("test")));
          Assert.fail();
-      } catch (MergeException e) {
+      } catch (MergerException e) {
       }
    }
    
@@ -112,7 +112,7 @@ public class IntegerElementTest {
       try {
          new IntegerElement("test").merge(new ObjectElement("test"));
          Assert.fail();
-      } catch (MergeException e) {
+      } catch (MergerException e) {
       }
    }
 

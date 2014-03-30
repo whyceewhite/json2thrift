@@ -1,6 +1,6 @@
 package puck.thrifty.datatype;
 
-import puck.thrifty.exception.MergeException;
+import puck.thrifty.MergerException;
 
 public class ListElement extends AbstractElement implements Element {
 
@@ -47,7 +47,7 @@ public class ListElement extends AbstractElement implements Element {
       return "list";
    }
    
-   public Element merge(Element element) throws MergeException {
+   public Element merge(Element element) throws MergerException {
       if (element == null || this == element || element.isUnknown()) {
          return this;
       } else if (element.getClass().equals(ListElement.class)) {
@@ -55,7 +55,7 @@ public class ListElement extends AbstractElement implements Element {
          this.setListType(mergedListTypeElement);
          return this;
       }
-      throw new MergeException(this, element);
+      throw new MergerException(this, element);
    }
    
    public boolean equals(Element element) {

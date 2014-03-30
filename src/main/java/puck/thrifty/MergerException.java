@@ -1,17 +1,24 @@
-package puck.thrifty.exception;
+package puck.thrifty;
 
 import puck.thrifty.datatype.Element;
 
-
-public class MergeException extends RuntimeException {
+/**
+ * <p>
+ * Represents an error that occurred during the merger process.
+ * </p>
+ * 
+ * @author ywhite
+ *
+ */
+public class MergerException extends RuntimeException {
 
    private static final long serialVersionUID = 1L;
    
-   public MergeException() {
+   public MergerException() {
       super();
    }
    
-   public MergeException(String message) {
+   public MergerException(String message) {
       super(message);
    }
    
@@ -26,7 +33,7 @@ public class MergeException extends RuntimeException {
     * @param mergeDonor The element that is being merged into another
     *       element. Required.
     */
-   public MergeException(Element mergeRecipient, Element mergeDonor) {
+   public MergerException(Element mergeRecipient, Element mergeDonor) {
       super("The element type of " + mergeDonor.getClass().getName() + " cannot be merged into " + mergeRecipient.getClass().getName());
    }
 

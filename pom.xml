@@ -36,7 +36,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>puck.thrifty.Merger</mainClass>
+							<mainClass>puck.thrifty.Cli</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -49,6 +49,11 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>2.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>args4j</groupId>
+			<artifactId>args4j</artifactId>
+			<version>2.0.26</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
