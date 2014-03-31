@@ -7,7 +7,11 @@ public class ListElement extends AbstractElement implements Element {
    private Element listType;
    
    public ListElement(Element listType) {
-      this.listType = listType;
+      this.setListType(listType);
+   }
+   
+   public boolean isList() {
+      return true;
    }
    
    public String getName() {
@@ -39,8 +43,16 @@ public class ListElement extends AbstractElement implements Element {
       return this.listType;
    }
    
-   public void setListType(Element listType) {
-      this.listType = listType;
+   private void setListType(Element listType) {
+      // A Thrift struct cannot have a list of list; therefore, convert the
+      // listType to an ObjectElement.
+      if (listType.isList()) {
+         ObjectElement newListType = new ObjectElement(listType.getName() + "X");
+         newListType.add(listType);
+         this.listType = newListType;
+      } else {
+         this.listType = listType;
+      }
    }
    
    public String getDatatypeName() {
@@ -62,5 +74,5 @@ public class ListElement extends AbstractElement implements Element {
       if (!super.equals(element)) return false;
       return this.getListType().equals(((ListElement)element).getListType());
    }
-
+   
 }

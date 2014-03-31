@@ -64,8 +64,8 @@ public class Converter {
     * value provided by name.
     * </p>
     * 
-    * @param rootName The name of the root structure. If the name is null or
-    *       empty then a default structure name is used.
+    * @param   rootName The name of the root structure. If the name is null or
+    *          empty then a default structure name is used.
     */
    public Converter(String rootName) {
       this.setRootName(rootName);
@@ -77,8 +77,8 @@ public class Converter {
     * that represents the structure of the JSON object.
     * </p>
     * 
-    * @param json The JSON object to parse and convert into an ObjectElement.
-    * @return The JSON string converted into an ObjectElement representation.
+    * @param   json The JSON object to parse and convert into an ObjectElement.
+    * @return  The JSON string converted into an ObjectElement representation.
     */
    public ObjectElement parse(String json) {
       
@@ -99,10 +99,10 @@ public class Converter {
     * Makes an ObjectElement from the map of JSON elements.
     * </p>
     * 
-    * @param name The name of the object structure. This name is used as the
-    * name for the thrift struct that this object map represents.  
-    * @param elementsMap A JSON object represented as a map of elements.
-    * @return The elementsMap as an ObjectElement object.
+    * @param   name The name of the object structure. This name is used as the
+    *          name for the thrift struct that this object map represents.  
+    * @param   elementsMap A JSON object represented as a map of elements.
+    * @return  The elementsMap as an ObjectElement object.
     */
    protected ObjectElement asElement(String name, Map<String, Object> elementsMap) {
       
@@ -119,6 +119,40 @@ public class Converter {
          rootElement.add(element);
       }
       return rootElement;
+   }
+   
+   /**
+    * <p>
+    * Translates an object value into a corresponding {@link puck.thrifty.datatype.Element}
+    * based on its data type. The name of the object will be the key.
+    * </p>
+    * 
+    * @param   key The JSON element name.
+    * @param   value The JSON element value that corresponds to the key.
+    * @return  The key and value as an Element that represents the data type of
+    *          the value.
+    */
+   @SuppressWarnings({ "unchecked", "rawtypes" })
+   private Element asElement(String key, Object value) {
+      
+      if (value != null) {
+         if (value instanceof Boolean) {
+            return new BooleanElement(key);
+         } else if (value instanceof Integer) {
+            return new IntegerElement(key);
+         } else if (value instanceof Long) {
+            return new LongElement(key);
+         } else if (value instanceof String) {
+            return new StringElement(key);
+         } else if (value instanceof List) {
+            return asListElement(key, (List)value);
+         } else if (value instanceof Map) {
+            return asElement(key, (Map<String, Object>) value);
+         } else if (value instanceof Double) {
+            return new DoubleElement(key);
+         }
+      } 
+      return new UnknownElement(key);
    }
    
    /**
@@ -142,42 +176,7 @@ public class Converter {
          currentListType = asElement(key, o);
          listType = listType.merge(currentListType);
       }
-      // If no exception was thrown then our listType is the element type of our list.
       return new ListElement(listType);
-   }
-   
-   /**
-    * <p>
-    * Translates an object value into a corresponding {@link org.gee.thrift.datatype.Element}
-    * based on its data type. The name of the object will be the key.
-    * </p>
-    * 
-    * @param key The JSON element name.
-    * @param value The JSON element value that corresponds to the key.
-    * @return The key and value as an Element that represents the data type of
-    *       the value.
-    */
-   @SuppressWarnings({ "unchecked", "rawtypes" })
-   private Element asElement(String key, Object value) {
-      
-      if (value != null) {
-         if (value instanceof Boolean) {
-            return new BooleanElement(key);
-         } else if (value instanceof Integer) {
-            return new IntegerElement(key);
-         } else if (value instanceof Long) {
-            return new LongElement(key);
-         } else if (value instanceof String) {
-            return new StringElement(key);
-         } else if (value instanceof List) {
-            return asListElement(key, (List)value);
-         } else if (value instanceof Map) {
-            return asElement(key, (Map<String, Object>) value);
-         } else if (value instanceof Double) {
-            return new DoubleElement(key);
-         }
-      } 
-      return new UnknownElement(key);
    }
       
    /**

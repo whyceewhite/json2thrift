@@ -7,6 +7,7 @@ public interface Element {
    
    public boolean isObject();
    public boolean isUnknown();
+   public boolean isList();
    
    public boolean hasObject();
    public Element getObject();

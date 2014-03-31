@@ -24,6 +24,10 @@ public abstract class AbstractElement implements Element {
       return false;
    }
    
+   public boolean isList() {
+      return false;
+   }
+   
    public Element merge(Element element) throws MergerException {
       if (element == null || this == element || element.isUnknown() || this.getClass().equals(element.getClass())) {
          return this;
